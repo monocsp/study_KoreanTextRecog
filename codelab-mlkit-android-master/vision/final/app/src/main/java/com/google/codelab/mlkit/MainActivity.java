@@ -42,6 +42,7 @@ import com.google.mlkit.vision.face.FaceDetectorOptions;
 import com.google.mlkit.vision.text.Text;
 import com.google.mlkit.vision.text.TextRecognition;
 import com.google.mlkit.vision.text.TextRecognizer;
+import com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -115,30 +116,34 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         dropdown.setOnItemSelectedListener(this);
     }
 
+    /// 여기에서 텍스트 recogition 진행
     private void runTextRecognition() {
         
 
-//        InputImage image = InputImage.fromBitmap(mSelectedImage, 0);
+        InputImage image = InputImage.fromBitmap(mSelectedImage, 0);
 //        TextRecognizer recognizer = TextRecognition.getClient();
-//        mTextButton.setEnabled(false);
-//        recognizer.process(image)
-//                .addOnSuccessListener(
-//                        new OnSuccessListener<Text>() {
-//                            @Override
-//                            public void onSuccess(Text texts) {
-//                                mTextButton.setEnabled(true);
-//                                processTextRecognitionResult(texts);
-//                            }
-//                        })
-//                .addOnFailureListener(
-//                        new OnFailureListener() {
-//                            @Override
-//                            public void onFailure(@NonNull Exception e) {
-//                                // Task failed with an exception
-//                                mTextButton.setEnabled(true);
-//                                e.printStackTrace();
-//                            }
-//                        });
+        TextRecognizer recognizer =
+                TextRecognition.getClient(new KoreanTextRecognizerOptions.Builder().build());
+
+        mTextButton.setEnabled(false);
+        recognizer.process(image)
+                .addOnSuccessListener(
+                        new OnSuccessListener<Text>() {
+                            @Override
+                            public void onSuccess(Text texts) {
+                                mTextButton.setEnabled(true);
+                                processTextRecognitionResult(texts);
+                            }
+                        })
+                .addOnFailureListener(
+                        new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                // Task failed with an exception
+                                mTextButton.setEnabled(true);
+                                e.printStackTrace();
+                            }
+                        });
     }
 
     private void processTextRecognitionResult(Text texts) {

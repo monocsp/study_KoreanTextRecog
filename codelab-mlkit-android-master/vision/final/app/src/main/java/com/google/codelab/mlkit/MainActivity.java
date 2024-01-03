@@ -22,6 +22,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.util.Log;
 import android.util.Pair;
 import android.view.View;
 import android.widget.AdapterView;
@@ -131,6 +132,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         new OnSuccessListener<Text>() {
                             @Override
                             public void onSuccess(Text texts) {
+                                Log.d(TAG, "texts : " + texts.getText());
                                 mTextButton.setEnabled(true);
                                 processTextRecognitionResult(texts);
                             }

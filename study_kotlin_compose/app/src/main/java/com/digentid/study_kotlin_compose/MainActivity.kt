@@ -1,30 +1,52 @@
 package com.digentid.study_kotlin_compose
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.OnBackPressedDispatcher
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.BottomAppBar
+import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
@@ -32,10 +54,12 @@ import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import coil.compose.rememberImagePainter
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.TextRecognition
 
 class MainActivity : ComponentActivity() {
     private lateinit var outputDirectory: File
-    private lateinit var cameraExcutor: ExecutorService
+    private lateinit var cameraExecutor: ExecutorService
 
     private var shouldShowCamera: MutableState<Boolean> = mutableStateOf(false)
     private lateinit var photoUri: Uri
@@ -44,38 +68,32 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            if (shouldShowCamera.value) {
-                CameraView(
-                    outputDirectory = outputDirectory,
-                    executor = cameraExcutor,
-                    onImageCaptured = ::handleImageCapture,
-                    onError = { Log.e("TAG", "VIEW ERROR ", it) })
-            } else {
-                CameraView(
-                    outputDirectory = outputDirectory,
-                    executor = cameraExcutor,
-                    onImageCaptured = ::handleImageCapture,
-                    onError = { Log.e("TAG", "VIEW ERROR ", it) })
+            setContent {
+                if (shouldShowCamera.value) {
+                    CameraView(
+                        outputDirectory = outputDirectory,
+                        executor = cameraExecutor,
+                        onImageCaptured = ::handleImageCapture,
+                        onError = { Log.e("kilo", "View error:", it) }
+                    )
+                }
 
+                if (shouldShowPhoto.value) {
+                    ImagePreviewScreen(photoUri , onTapBackPress = {
+                        shouldShowCamera.value = true
+                        shouldShowPhoto.value =false
+
+
+                    })
+                }
             }
 
-            if (shouldShowPhoto.value) {
-                Image(
-                    painter = rememberImagePainter(photoUri),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
+            requestCameraPermission()
 
-
+            outputDirectory = getOutputDirectory()
+            cameraExecutor = Executors.newSingleThreadExecutor()
         }
-
-
-        requestCameraPermission()
-        outputDirectory = getOutputDirectory()
-        cameraExcutor = Executors.newSingleThreadExecutor()
     }
-
     private fun handleImageCapture(uri: Uri) {
         Log.i("TAG", "IMAGE CAPTURE : $uri")
 
@@ -90,14 +108,14 @@ class MainActivity : ComponentActivity() {
                 this,
                 Manifest.permission.CAMERA
             ) == PackageManager.PERMISSION_GRANTED -> {
-                Log.i("TAG", "Permission Previously granted")
+                Log.d("TAG", "Permission Previously granted")
                 shouldShowCamera.value = true
             }
 
             ActivityCompat.shouldShowRequestPermissionRationale(
                 this,
                 Manifest.permission.CAMERA
-            ) -> Log.i("TAG", "SHOW CAMERA PERMISSION DIALOG")
+            ) -> Log.d("TAG", "SHOW CAMERA PERMISSION DIALOG")
 
             else -> requestPermissionLauncher.launch(Manifest.permission.CAMERA)
 
@@ -107,11 +125,11 @@ class MainActivity : ComponentActivity() {
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (isGranted) {
-                Log.i("TAG", "PERMISSION GRANT")
+                Log.d("TAG", "PERMISSION GRANT")
                 shouldShowCamera.value = true
 
             } else {
-                Log.i("TAG", "PERMISSION DENIED")
+                Log.d("TAG", "PERMISSION DENIED")
 
             }
         }
@@ -124,7 +142,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        cameraExcutor.shutdown()
+        cameraExecutor.shutdown()
     }
 
 }
@@ -132,44 +150,118 @@ class MainActivity : ComponentActivity() {
 
 
 
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    ScaffoldExample()
 
+@Composable
+fun ImagePreviewScreen(photoUri : Uri ,onTapBackPress: () -> Unit,) {
+    val textRecoList: MutableState<List<String>> = mutableStateOf(listOf())
+    val context = LocalContext.current
+    val scrollState = rememberScrollState()
+
+
+    BackPressHandler(onBackPressed = onTapBackPress)
+
+    val resultTextList = OcrView().showCaptureImage(context = LocalContext.current, img = photoUri)
+    textRecoList.value = resultTextList
+
+
+    Scaffold() { paddingValues ->
+        Box(modifier = Modifier.padding(paddingValues)) {
+            Column {
+//                Image(
+//                    painter = rememberImagePainter(photoUri),
+//                    contentDescription = null,
+//                    modifier = Modifier.fillMaxSize(),
+//                    contentScale = ContentScale.Fit
+//                )
+
+
+                LazyColumn {
+                    items(textRecoList.value) { item ->
+                        Text(
+                            text = item,
+                            textAlign = TextAlign.Center,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 24.dp)
+                        )
+
+                    }
+
+                }
+
+            }
+
+        }
+
+    }
 }
 
 
+
+
 @Composable
-fun ScaffoldExample() {
-    Scaffold(
-        topBar = {
-            TopAppBar(
+fun ExampleScreen() {
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // Permission Accepted: Do something
+            Log.d("ExampleScreen","PERMISSION GRANTED")
 
-                title = {
-                    Text("Top app bar")
+        } else {
+            // Permission Denied: Do something
+            Log.d("ExampleScreen","PERMISSION DENIED")
+        }
+    }
+    val context = LocalContext.current
+
+    Button(
+        onClick = {
+            // Check permission
+            when (PackageManager.PERMISSION_GRANTED) {
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.CAMERA
+                ) -> {
+                    // Some works that require permission
+                    Log.d("ExampleScreen","Code requires permission")
                 }
-            )
-        },
+                else -> {
+                    // Asking for permission
+                    launcher.launch(Manifest.permission.CAMERA)
+                }
+            }
+        }
+    ) {
+        Text(text = "Check and Request Permission")
+    }
+}
 
 
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            Text(
-                modifier = Modifier.padding(8.dp),
-                text =
-                """
-                    This is an example of a scaffold. It uses the Scaffold composable's parameters to create a screen with a simple top app bar, bottom app bar, and floating action button.
 
-                    It also contains some basic inner content, such as this text.
+@Composable
+fun BackPressHandler(
+    backPressedDispatcher: OnBackPressedDispatcher? =
+        LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher,
+    onBackPressed: () -> Unit
+) {
+    val currentOnBackPressed by rememberUpdatedState(newValue = onBackPressed)
 
-                    
-                """.trimIndent(),
-            )
+    val backCallback = remember {
+        object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                currentOnBackPressed()
+            }
+        }
+    }
+
+    DisposableEffect(key1 = backPressedDispatcher) {
+        backPressedDispatcher?.addCallback(backCallback)
+
+        onDispose {
+            backCallback.remove()
         }
     }
 }

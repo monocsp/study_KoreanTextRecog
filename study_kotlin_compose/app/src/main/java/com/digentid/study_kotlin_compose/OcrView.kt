@@ -4,13 +4,19 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import com.google.android.gms.tasks.Task
+import com.google.android.gms.tasks.Tasks
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.Text
 import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
 
 
-class OcrView {
+class OcrView  {
+
+
     private val mGraphicOverlay: GraphicOverlay? = null
     fun showCaptureImage(context: Context, img: Uri): MutableList<String> {
         val resultText = mutableListOf<String>()
@@ -28,28 +34,26 @@ class OcrView {
             .addOnFailureListener {
                 Log.d("TAG", "ShowCaptureImage: " + it.message)
             }
-        
+
+
+
         return resultText
     }
 
-//    private fun processTextRecognitionResult(texts: Text) {
-//        val blocks = texts.textBlocks
-//        if (blocks.size == 0) {
-//
-//            return
-//        }
-//        mGraphicOverlay?.clear()
-//        for (i in blocks.indices) {
-//            val lines = blocks[i].lines
-//            for (j in lines.indices) {
-//                val elements = lines[j].elements
-//                for (k in elements.indices) {
-//                    val textGraphic: GraphicOverlay.Graphic = TextGraphic(mGraphicOverlay, elements[k])
-//                    mGraphicOverlay?.add(textGraphic)
-//                }
-//            }
-//        }
-//    }
+    suspend fun getTextRecogitionResult(image : InputImage) = suspendCancellableCoroutine<Text?> {cancellableContinuation ->
+
+        TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build()).process(image).addOnCompleteListener {
+            if(it.isSuccessful){
+                cancellableContinuation.resume(it.result)
+            }else{
+                cancellableContinuation.resume(null)
+            }
+
+        }
+
+
+    }
+
 
 
 }

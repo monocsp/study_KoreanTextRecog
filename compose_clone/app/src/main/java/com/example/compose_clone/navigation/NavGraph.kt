@@ -13,11 +13,11 @@ import com.example.compose_clone.screens.Splash
 fun NavGraph(navController :NavHostController ){
     NavHost(navController = navController, startDestination = Routes.Splash.routes ) {
         composable(Routes.Splash.routes){
-            Splash()
+            Splash(navController = navController)
         }
 
         composable(Routes.Home.routes){
-            Home(navController = navController)
+            Home()
         }
 
         composable(Routes.Home.routes){

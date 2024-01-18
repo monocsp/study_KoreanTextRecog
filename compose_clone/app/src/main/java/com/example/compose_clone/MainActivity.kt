@@ -24,19 +24,18 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
 
                 ) {
-                    val navController = rememberNavController()
-                    NavGraph(navController = navController)
+                    Greeting()
+//                    val navController = rememberNavController()
+//                    NavGraph(navController = navController)
                 }
 
         }
     }
 }
-
+@Preview
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
+fun Greeting() {
+    val navController = rememberNavController()
+    NavGraph(navController = navController)
 }
 

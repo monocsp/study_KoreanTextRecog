@@ -264,7 +264,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         mGraphicOverlay.clear();
         switch (position) {
             case 0:
-                mSelectedImage = getBitmapFromAsset(this, "sample_idcard.png");
+                mSelectedImage = getBitmapFromAsset(this, "Please_walk_on_the_grass.jpg");
+//                mSelectedImage = getBitmapFromAsset(this, "sample_idcard.png");
+
                 break;
             case 1:
                 // Whatever you want to happen when the thrid item gets selected

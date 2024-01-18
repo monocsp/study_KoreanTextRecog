@@ -1,6 +1,7 @@
 package com.example.compose_clone.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
 
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -20,7 +21,7 @@ fun NavGraph(navController :NavHostController ){
             Home()
         }
 
-        composable(Routes.Home.routes){
+        composable(Routes.BottomNav.routes){
             BottomNav(navController = navController)
         }
 

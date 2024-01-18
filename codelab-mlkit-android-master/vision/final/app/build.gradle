@@ -19,6 +19,25 @@ android {
     packagingOptions {
         exclude 'META-INF/androidx.exifinterface_exifinterface.version'
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    buildscript {
+
+        repositories {
+            jcenter()
+            maven {
+                url 'https://maven.google.com/'
+                name 'Google'
+            }
+            google()
+        }
+        dependencies {
+            classpath 'com.android.tools.build:gradle:4.2.0'
+        }
+    }
+
 }
 
 dependencies {

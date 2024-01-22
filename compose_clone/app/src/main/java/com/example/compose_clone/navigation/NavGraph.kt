@@ -7,6 +7,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.compose_clone.screens.BottomNav
+import com.example.compose_clone.screens.Camera
 import com.example.compose_clone.screens.Home
 import com.example.compose_clone.screens.Splash
 
@@ -23,6 +24,10 @@ fun NavGraph(navController :NavHostController ){
 
         composable(Routes.BottomNav.routes){
             BottomNav(navController = navController)
+        }
+
+        composable(Routes.Camera.routes){
+            Camera()
         }
 
 

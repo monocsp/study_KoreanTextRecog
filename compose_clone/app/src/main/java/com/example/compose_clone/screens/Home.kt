@@ -23,18 +23,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.compose_clone.navigation.Routes
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview
 @Composable
-fun Home (){
+fun Home (navController : NavHostController){
 
-    val navController = rememberNavController()
+
     Scaffold (topBar = { TopAppBar(title = { Text(text = "신분증 촬영")
     })}){innerPadding->
-    
+
+
         Column(modifier = Modifier
             .padding(innerPadding,)
             .background(Color(0xffffffff))){
@@ -42,7 +43,8 @@ fun Home (){
                 Text(text = "신분증 종류")
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly ){
                     ElevatedButton(onClick = {
-                        goToCameraPage(navController)
+
+                        navController.navigate(Routes.Camera.routes)
                     }) {
                         Text("주민등록증")
                     }
@@ -63,7 +65,8 @@ fun Home (){
 
 }
 
-fun goToCameraPage(navController : NavController){
-    navController.navigate(Routes.Camera.routes)
-
-}
+//fun goToCameraPage(navController : NavHostController){
+//    val navController = rememberNavController()
+//    navController.navigate(Routes.Camera.routes)
+//
+//}

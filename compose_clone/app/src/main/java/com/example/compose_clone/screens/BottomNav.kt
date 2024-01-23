@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -22,13 +23,13 @@ import com.example.compose_clone.navigation.Routes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BottomNav(navController: NavController) {
+fun BottomNav(navController: NavHostController) {
     val navController1 = rememberNavController()
 
     Scaffold (bottomBar = { MyBottomBar(navController1) }){innerPadding ->
         NavHost(navController = navController1, startDestination = Routes.Home.routes, modifier = Modifier.padding(innerPadding)){
             composable(route =  Routes.Home.routes){
-                Home()
+                Home(navController)
             }
         }
 

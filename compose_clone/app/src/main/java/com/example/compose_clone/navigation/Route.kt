@@ -6,5 +6,4 @@ sealed class Routes (val routes : String){
     object BottomNav : Routes("bottom_nav")
     object Camera : Routes("camera")
 
-
 }

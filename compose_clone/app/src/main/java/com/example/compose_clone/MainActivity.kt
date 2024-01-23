@@ -32,7 +32,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-@Preview
+
 @Composable
 fun Greeting() {
     val navController = rememberNavController()

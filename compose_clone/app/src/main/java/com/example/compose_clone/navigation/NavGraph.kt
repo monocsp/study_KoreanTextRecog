@@ -18,9 +18,6 @@ fun NavGraph(navController :NavHostController ){
             Splash(navController = navController)
         }
 
-        composable(Routes.Home.routes){
-            Home()
-        }
 
         composable(Routes.BottomNav.routes){
             BottomNav(navController = navController)

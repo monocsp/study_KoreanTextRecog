@@ -15,4 +15,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "compose_clone"
 include(":app")
- 
+include(":compose-cameax")

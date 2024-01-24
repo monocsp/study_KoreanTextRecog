@@ -50,6 +50,8 @@ android {
 }
 
 dependencies {
+    //app module
+    implementation(project(":compose-camerax"))
 
     implementation("androidx.core:core-ktx:1.9.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
@@ -70,10 +72,10 @@ dependencies {
     implementation("androidx.compose.material3:material3")
 
     //// CAMERA STUFF ////
-    implementation "androidx.camera:camera-camera2:$camerax_version"
-    implementation "androidx.camera:camera-lifecycle:$camerax_version"
-    implementation "androidx.camera:camera-view:$camerax_version"
-    implementation "androidx.camera:camera-extensions:$camerax_version"
+    implementation("androidx.camera:camera-camera2:1.4.0-alpha03")
+    implementation("androidx.camera:camera-lifecycle:1.4.0-alpha03")
+    implementation ("androidx.camera:camera-view:1.4.0-alpha03")
+
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
